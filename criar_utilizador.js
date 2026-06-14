@@ -1,7 +1,7 @@
 // criar_utilizador.js
 
 // IMPORTAR FIREBASE A PARTIR DO FICHEIRO CENTRAL
-import { app, db } from "./firebase-config.js";
+import { db } from "./firebase-config.js";
 
 import { 
     collection, 

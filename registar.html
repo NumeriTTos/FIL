@@ -1,1 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registar Número</title>
 
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 400px;
+            margin: auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #msg {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Registar Número</h2>
+
+    <input id="numero" type="number" placeholder="Número (00 a 99)" min="0" max="99">
+    <input id="valor" type="number" placeholder="Valor (€)" step="2.50" min="2.50" max="30">
+
+    <button onclick="registar()">Guardar</button>
+
+    <p id="msg"></p>
+</div>
+
+<script type="module">
+    import { db } from "./firebase-config.js";
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const numeroInput = document.getElementById("numero");
+    const valorInput = document.getElementById("valor");
+    const msg = document.getElementById("msg");
+
+    // FORMATAR NÚMERO
+    numeroInput.addEventListener("input", () => {
+        let v = parseInt(numeroInput.value);
+        if (v < 0) v = 0;
+        if (v > 99) v = 99;
+        numeroInput.value = v.toString().padStart(2, "0");
+    });
+
+    // LIMITAR VALOR
+    valorInput.addEventListener("input", () => {
+        let v = parseFloat(valorInput.value);
+        if (v < 2.50) v = 2.50;
+        if (v > 30) v = 30;
+        valorInput.value = v.toFixed(2);
+    });
+
+    // FUNÇÃO PRINCIPAL
+    window.registar = async function () {
+        const numero = numeroInput.value.trim();
+        const valor = parseFloat(valorInput.value);
+
+        if (numero === "" || isNaN(valor)) {
+            msg.innerText = "Preenche todos os campos.";
+            msg.style.color = "red";
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "registos"), {
+                numero: numero,
+                valor: valor,
+                data: new Date().toISOString()
+            });
+
+            msg.innerText = "Registo guardado com sucesso!";
+            msg.style.color = "green";
+
+            numeroInput.value = "";
+            valorInput.value = "";
+
+        } catch (e) {
+            console.error("Erro Firebase:", e);
+            msg.innerText = "Erro ao guardar.";
+            msg.style.color = "red";
+        }
+    };
+</script>
+
+</body>
+</html>
